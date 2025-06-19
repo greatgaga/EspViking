@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Beacon Spam Monitor</title>
+  <style>
+    .button-style {
+      display: block;
+      background-color: rgb(200, 23, 23);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 30px 50px;
+      transition: background-color 0.25s, transform 0.25s;
+      text-align: center;
+      margin: 30px auto;
+    }
+
+    .button-style:hover {
+      background-color: rgb(207, 98, 98);
+      transform: scale(1.2); /* Grows uniformly */
+    }
+
+    body {
+      text-align: center;
+      font-family: Arial;
+    }
+
+    .header {
+      display: inline-block;
+      font-weight: bold;
+      font-size: 20px;
+      transition: font-size 0.25s, color 0.15s;
+    }
+
+    .header h1 {
+      transition: font-size 0.5s, color 0.25s;
+    }
+
+    .header h1:hover {
+      color: rgb(191, 0, 0);
+      font-size: 50px;
+      text-shadow: 0 0 5px red, 0 0 10px darkred;
+      transition: font-size 0.25s, color 0.25s, text-shadow 0.25s;
+    }
+
+    .results-style {
+      color: rgb(191, 0, 0);
+      font-size: 15px;
+      text-shadow: 0 0 1px red, 0 0 5px darkred;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Beacon Spam Monitor</h1>
+  </div>
+  <button class="button-style" onclick="startBeaconScan()">Start beacon spam</button>
+  
+  <div class="results-style">
+    <div id="status">Listening for beacon data...</div>
+    <div id="beaconData"></div>
+  </div>
+
+  <script>
+    const seenAPs = new Set(); // Keeps track of already seen AP names
+
+    function startBeaconScan() {
+      fetch("/api/beacon/start")
+      fetch("/api/beacon/update_MACs")
+        .then(res => res.json())
+        .then(data => {
+          console.log("Beacon Scan Started:", data);
+          document.getElementById("status").textContent = "Beacon scan in progress...";
+        })
+        .catch(error => {
+          console.error("Error starting scan:", error);
+        });
+    }
+
+    function fetchBeaconUpdates() {
+      fetch("/api/beacon/status")
+        .then(res => res.json())
+        .then(data => {
+          // If the response is a list of APs
+          if (Array.isArray(data)) {
+            data.forEach(ap => handleNewAP(ap));
+          } else {
+            handleNewAP(data);
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching beacon data:", error);
+        });
+    }
+
+    function handleNewAP(ap) {
+      if (!seenAPs.has(ap.name)) {
+        seenAPs.add(ap.name);
+
+        const beaconDiv = document.getElementById("beaconData");
+        const entry = document.createElement("div");
+        entry.textContent = `New AP Detected Name: ${ap.name}, Beacons: ${ap.numAP}`;
+        beaconDiv.appendChild(entry);
+      }
+    }
+
+    // Start polling every 1 second
+    setInterval(fetchBeaconUpdates, 1000);
+  </script>
+</body>
+</html>

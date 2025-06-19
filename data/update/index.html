@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Update</title>
+  <style>
+    .button-style {
+      background-color: rgb(200, 23, 23);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 30px 50px;
+      transition: background-color 0.25s, transform 0.25s;
+      text-align: center;
+      margin: 30px auto;
+      margin-left: 20px; 
+      margin-right: 20px;
+    }
+
+    .button-style:hover {
+      background-color: rgb(207, 98, 98);
+      transform: scale(1.2); /* Grows uniformly */
+    }
+
+    body {
+      text-align: center;
+      font-family: Arial;
+    }
+
+    .header {
+      display: inline-block;
+      font-weight: bold;
+      font-size: 20px;
+      transition: font-size 0.25s, color 0.15s;
+    }
+
+    .header h1 {
+      transition: font-size 0.5s, color 0.25s;
+    }
+
+    .header h1:hover {
+      color: rgb(191, 0, 0);
+      font-size: 50px;
+      text-shadow: 0 0 5px red, 0 0 10px darkred;
+      transition: font-size 0.25s, color 0.25s, text-shadow 0.25s;
+    }
+
+    .results-style {
+      color: rgb(191, 0, 0);
+      font-size: 15px;
+      text-shadow: 0 0 1px red, 0 0 5px darkred;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Update</h1>
+  </div>
+  <div class="results-style" id="status">Update starting</div>
+  <div class="results-style" id="updates"></div>
+  <button class="button-style" onclick="startScan()">Start Updating</button>
+
+  <script>
+    let lastUpdate = ""; // Store last message to avoid duplicates
+
+    function startScan() {
+      fetch("/api/update/start")
+        .then(res => res.json())
+        .then(data => {
+          console.log("Scan Start:", data);
+        });
+    }
+
+    function fetchUpdate() {
+      fetch("/api/update/status")
+        .then(res => res.json())
+        .then(data => {
+          const newMessage = `Updating ${data.thing}: ${data.message}`;
+
+          if (newMessage !== lastUpdate) {
+            lastUpdate = newMessage; // Update the last seen message
+
+            const updateDiv = document.getElementById("updates");
+            const entry = document.createElement("div");
+            entry.textContent = newMessage;
+            updateDiv.appendChild(entry);
+          }
+
+          const statusDiv = document.getElementById("status");
+          if (statusDiv.textContent === "Update starting") {
+            statusDiv.textContent = "";
+          }
+        });
+    }
+
+    setInterval(fetchUpdate, 5000);
+  </script>
+</body>
+</html>

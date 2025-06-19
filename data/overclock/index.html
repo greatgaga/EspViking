@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Overclocking monitor</title>
+  <style>
+    .button-style {
+      background-color: rgb(200, 23, 23);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 30px 50px;
+      transition: background-color 0.25s, transform 0.25s;
+      text-align: center;
+      margin: 30px auto;
+      margin-left: 20px; 
+      margin-right: 20px;
+    }
+
+    .button-style:hover {
+      background-color: rgb(207, 98, 98);
+      transform: scale(1.2); /* Grows uniformly */
+    }
+
+    body {
+      text-align: center;
+      font-family: Arial;
+    }
+
+    .header {
+      display: inline-block;
+      font-weight: bold;
+      font-size: 20px;
+      transition: font-size 0.25s, color 0.15s;
+    }
+
+    .header h1 {
+      transition: font-size 0.5s, color 0.25s;
+    }
+
+    .header h1:hover {
+      color: rgb(191, 0, 0);
+      font-size: 50px;
+      text-shadow: 0 0 5px red, 0 0 10px darkred;
+      transition: font-size 0.25s, color 0.25s, text-shadow 0.25s;
+    }
+
+    .results-style {
+      color: rgb(191, 0, 0);
+      font-size: 15px;
+      text-shadow: 0 0 1px red, 0 0 5px darkred;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Overclocking monitor</h1>
+  </div>
+  <p class="results-style" id="overclockStatus">Loading status...</p>
+  <button class="button-style" onclick="startOverclocking()">on</button>
+  <button class="button-style" onclick="stopOverclocking()">off</button>
+
+  <div class="results-style" id="status">Messages:<pre></pre></div>
+  <div class="results-style" id="CPUdata"></div>
+
+  <script>
+    const seenMessages = new Set(); // Keeps track of already seen messages
+
+    function startOverclocking() {
+      fetch("/api/CPU/overclocking/start")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("status").textContent = "Updating frequency in progress...";
+          document.getElementById("overclockStatus").textContent = "Overclocking CPU is on";
+          fetchCpuFrequency(); // fetch frequency immediately after
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    }
+
+    function stopOverclocking() {
+      fetch("/api/CPU/overclocking/stop")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("status").textContent = "Updating frequency in progress...";
+          document.getElementById("overclockStatus").textContent = "Overclocking CPU is off";
+          fetchCpuFrequency(); // fetch frequency immediately after
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    }
+
+    function fetchCpuFrequency() {
+      fetch("/api/CPU/overclocking/status")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("CPUdata").textContent = `CPU Frequency: ${data.frequency} MHz`;
+        })
+        .catch(error => {
+          console.error("Error fetching CPU frequency:", error);
+          document.getElementById("CPUdata").textContent = "Error fetching CPU frequency";
+        });
+    }
+
+    function fetchOverclockingUpdates() {
+      fetch("/api/CPU/overclocking/update")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            data.forEach(message => handleNewMessage(message));
+          } else {
+            handleNewMessage(data);
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching data:", error);
+        });
+    }
+
+    function handleNewMessage(message) {
+      if (!seenMessages.has(message.message)) {
+        seenMessages.add(message.message);
+
+        const CPUDiv = document.getElementById("CPUdata");
+        const entry = document.createElement("div");
+        entry.textContent = `Message: ${message.message}`;
+        CPUDiv.appendChild(entry);
+      }
+    }
+
+    // Fetch current status and freq on page load
+    function fetchCurrentStatus() {
+      fetch("/api/CPU/overclocking/status")
+        .then(res => res.json())
+        .then(data => {
+          if (data.overclockOn) {
+            document.getElementById("overclockStatus").textContent = "Overclocking CPU is on";
+          } else {
+            document.getElementById("overclockStatus").textContent = "Overclocking CPU is off";
+          }
+          document.getElementById("CPUdata").textContent = `CPU Frequency: ${data.frequency} MHz`;
+        })
+        .catch(error => {
+          console.error("Error fetching current status:", error);
+          document.getElementById("overclockStatus").textContent = "Error loading status";
+          document.getElementById("CPUdata").textContent = "";
+        });
+    }
+
+    window.onload = () => {
+      fetchCurrentStatus();
+      setInterval(fetchOverclockingUpdates, 1000); // Poll updates every second
+    }
+  </script>
+</body>
+</html>

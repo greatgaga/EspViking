@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Status</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial;
+    }
+
+    .header {
+      display: inline-block;
+      font-weight: bold;
+      font-size: 20px;
+      transition: font-size 0.25s, color 0.15s;
+    }
+
+    .header h1 {
+      display: inline-block;
+      transition: font-size 0.5s, color 0.25s;
+    }
+
+    .header h1:hover {
+      color: rgb(191, 0, 0);
+      font-size: 50px;
+      text-shadow: 0 0 5px red, 0 0 10px darkred;
+      transition: font-size 0.25s, color 0.25s, text-shadow 0.25s;
+    }
+
+    .results-style {
+      color: rgb(191, 0, 0);
+      font-size: 15px;
+      text-shadow: 0 0 1px red, 0 0 5px darkred;
+    } 
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Status</h1>
+  </div>
+  <div class="results-style" id="results">Loading...</div>
+  <script>
+    fetch("/api/status")
+        .then(res => res.json())
+        .then(data => {
+        document.getElementById("results").innerHTML = data.map(
+            host => `<div>IP: ${host.IP}, MAC: ${host.MAC}, Service: ${host.Service}</div>`
+        ).join("");
+        })
+        .catch(() => { 
+        document.getElementById("results").innerText = "Failed to load status.";
+        });
+    </script>
+</body>
+</html>

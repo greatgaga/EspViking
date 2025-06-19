@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Power belongs to the people who take it - Tyrell Wellick</title>
+  <meta name="x-server" content="ESP32-WEB-V1.0">
+  <!-- ServerID: ESP32-ScannerTarget -->
+  <script>
+    function runPortScan() {
+      window.location.href = "port_scanning";  // Navigate to port scanning page
+    }
+    function runUpdate() {
+      window.location.href = "update";  // Navigate to updating page
+    }
+    function runBeaconSpam() {
+      window.location.href = "beacon_spam";  // Navigate to beacon spam page
+    }
+    function runOverclock() {
+      window.location.href = "overclock"; // Navigate to overclocking page
+    }
+    function runVersionScan() {
+      window.location.href = "service_identifier"; // Navigate to version scanning page
+    }
+    function runStatus() {
+      window.location.href = "status"; // Navigate to status page
+    }
+  </script>
+  <style>
+    .button-style {
+      background-color: rgb(200, 23, 23);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 30px 50px;
+      transition: background-color 0.25s, transform 0.25s;
+    }
+
+    .button-style:hover {
+      background-color: rgb(207, 98, 98);
+      transform: scale(1.2); /* Grows uniformly */
+    }
+
+    body {
+      text-align: center;
+      font-family: Arial;
+    }
+
+    .header {
+      display: inline-block;
+      font-weight: bold;
+      font-size: 20px;
+      transition: font-size 0.25s, color 0.15s;
+    }
+
+    .header h1 {
+      display: inline-block;
+      transition: font-size 0.5s, color 0.25s;
+    }
+
+    .header h1:hover {
+      color: rgb(191, 0, 0);
+      font-size: 50px;
+      text-shadow: 0 0 5px red, 0 0 10px darkred;
+      transition: font-size 0.25s, color 0.25s, text-shadow 0.25s;
+    }
+  </style>
+</head> 
+<body>
+  <div class="header">
+    <h1>Power belongs to the people who take it - Tyrell Wellick</h1>
+  </div>
+  <div>
+    <div>
+      <button class="button-style" onclick="runPortScan()">port scanning</button>
+      <button class="button-style" onclick="sendCommand('deauth')">deauth</button>
+      <button class="button-style" onclick="runBeaconSpam()">beacon spam</button>
+      <button class="button-style" onclick="runUpdate()">update</button>
+      <button class="button-style" onclick="runOverclock()">overclock CPU</button>
+    </div>
+    <div>
+      <button class="button-style" onclick="runVersionScan()">service scanning</button>
+      <button class="button-style" onclick="runStatus()">status</button>
+    </div>
+    <div id="results"></div>
+  </div>
+</body>
+</html>
