@@ -1,6 +1,6 @@
 # EspViking
 Firmware made for ESP32 that is made for wifi pentesting.  
-It is kind of Mr. Robot themed :)
+It is kind of Mr. Robot themed :)  
 **If you go to change the code, please make it readable for other programmers.**
 
 ## Setting up the ESP32
