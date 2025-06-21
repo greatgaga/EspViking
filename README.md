@@ -12,4 +12,4 @@ I know this project is very buggy and feel free to contact me.
 
 
 **!!!DISCLAIMER!!!**  
-**Use this for ethical purposes **only****
+**Use this for ethical purposes *only***
