@@ -11,5 +11,5 @@ I know this project is very buggy and feel free to contact me.
 **Huge thanks to the Bjorn repo for a lot of inspiration in my project!** ([link](https://github.com/infinition/Bjorn/))
 
 
-**DISCLAIMER**  
-**Use this only for ethical purposes**
+**!!!DISCLAIMER!!!**  
+**Use this for ethical purposes *only***
