@@ -4,7 +4,7 @@ It is kind of Mr. Robot themed :)
 **If you go to change the code, please make it readable for other programmers.**
 
 ## Setting up the ESP32
-The only thing you need to setup is the password and SSID of your network.  
+The only thing you need to setup is the password and SSID of your network and API key for Gemini. 
 
 ## Notes
 I know this project is very buggy and feel free to contact me.  
