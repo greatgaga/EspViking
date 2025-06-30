@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FTPBruteforce Results</title>
+  <style>
+    body {
+      background-color: #121212;
+      text-align: center;
+      font-family: Arial;
+      color: rgb(191, 0, 0);
+    }
+
+    .header {
+      display: inline-block;
+      font-weight: bold;
+      font-size: 20px;
+      transition: font-size 0.25s, color 0.15s;
+    }
+
+    .header h1 {
+      transition: font-size 0.5s, color 0.25s;
+    }
+
+    .header h1:hover {
+      color: rgb(191, 0, 0);
+      font-size: 50px;
+      text-shadow: 0 0 5px red, 0 0 10px darkred;
+      transition: font-size 0.25s, color 0.25s, text-shadow 0.25s;
+    }
+
+    .results-style {
+      margin-top: 20px;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      color: rgb(191, 0, 0);
+      font-size: 15px;
+      text-shadow: 0 0 1px red, 0 0 5px darkred;
+      width: 80%;
+    }
+
+    th, td {
+      border: 1px solid rgb(191, 0, 0);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #1a1a1a;
+    }
+
+    .center-text {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>FTPBruteforce Results</h1>
+  </div>
+
+  <div class="results-style" id="results">
+    <p class="center-text">Loading...</p>
+  </div>
+
+  <script>
+    let checkInterval;
+
+    function startScan() {
+        fetch("/api/FTPBruteforce_start")
+            .then(handleResponse)
+            .then(() => {
+                document.getElementById("results").innerHTML = 
+                    "<p class='center-text'>Scan started...</p>";
+                checkProgress();
+            })
+            .catch(showError);
+    }
+
+    function checkProgress() {
+        clearInterval(checkInterval);
+
+        checkInterval = setInterval(() => {
+            fetch("/api/FTPBruteforce_progress")
+                .then(handleResponse)
+                .then(data => {
+                    if(data.status === "scanning") {
+                        const progress = Math.round((data.progress / data.total) * 100);
+                        document.getElementById("results").innerHTML =
+                            `<p class='center-text'>Scanning... ${progress}% complete</p>`;
+                    } else {
+                        clearInterval(checkInterval);
+                        fetchResults();
+                    }
+                })
+                .catch(showError);
+        }, 1000);
+    }
+
+    function fetchResults() {
+        fetch("/api/FTPBruteforce_results")
+            .then(handleResponse)
+            .then(data => {
+                if(!data.results || data.results.length === 0) {
+                    document.getElementById("results").innerHTML = 
+                        "<p class='center-text'>No results found</p>";
+                    return;
+                }
+
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Host</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                data.results.forEach(item => {
+                    html += `
+                        <tr>
+                            <td>${item.IP || 'N/A'}</td>
+                            <td>${item.username || 'Not found'}</td>
+                            <td>${item.password || 'Not found'}</td>
+                        </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                document.getElementById("results").innerHTML = html;
+            })
+            .catch(showError);
+    }
+
+    function handleResponse(res) {
+        if(!res.ok) throw new Error(res.statusText);
+        return res.json();
+    }
+
+    function showError(err) {
+        console.error("Error:", err);
+        document.getElementById("results").innerHTML = 
+            `<p class='center-text' style="color:#ff0000">Error: ${err.message || err}</p>`;
+        clearInterval(checkInterval);
+    }
+
+    // Start scan when page loads
+    startScan();
+  </script>
+</body>
+</html>

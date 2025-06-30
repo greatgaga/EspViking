@@ -4,8 +4,10 @@
   <title>Port Scan Results</title>
   <style>
     body {
+      background-color: #121212;
       text-align: center;
       font-family: Arial;
+      color: rgb(191, 0, 0);
     }
 
     .header {
@@ -31,6 +33,27 @@
       color: rgb(191, 0, 0);
       font-size: 15px;
       text-shadow: 0 0 1px red, 0 0 5px darkred;
+      margin-top: 20px;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+
+    th, td {
+      border: 1px solid rgb(191, 0, 0);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #1a1a1a;
+    }
+
+    .center-text {
+      text-align: center;
     }
   </style>
 </head>
@@ -38,18 +61,49 @@
   <div class="header">
     <h1>Port Scan Results</h1>
   </div>
-  <div class="results-style" id="results">Loading...</div>
+
+  <div class="results-style" id="results">
+    <p class="center-text">Loading...</p>
+  </div>
+
   <script>
-    fetch("/api/port_scan")
+    function fetchResults() {
+      fetch("/api/port_scan")
         .then(res => res.json())
         .then(data => {
-        document.getElementById("results").innerHTML = data.map(
-            host => `<div>IP: ${host.ip}, Port: ${host.port}, Open: ${host.open}</div>`
-        ).join("");
+          let html = `
+            <table>
+              <thead>
+                <tr>
+                  <th>IP Address</th>
+                  <th>Port</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.forEach(host => {
+            html += `
+              <tr>
+                <td>${host.ip}</td>
+                <td>${host.port}</td>
+                <td>${host.open ? "Open" : "Closed"}</td>
+              </tr>
+            `;
+          });
+
+          html += `</tbody></table>`;
+          document.getElementById("results").innerHTML = html;
         })
         .catch(() => {
-        document.getElementById("results").innerText = "Failed to load scan results.";
+          document.getElementById("results").innerHTML =
+            "<p class='center-text'>Failed to load scan results.</p>";
         });
-    </script>
+    }
+
+    // Load results on initial page load
+    fetchResults();
+  </script>
 </body>
 </html>

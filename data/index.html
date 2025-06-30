@@ -1,27 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- Fell free to change CSS and look of this web page (I know that its not the best) -->
+  <!-- Also if you have any better ideas for the structure of JSON or JS feel free to implement it (I know that its not the best) -->
   <title>Power belongs to the people who take it - Tyrell Wellick</title>
   <meta name="x-server" content="ESP32-WEB-V1.0">
   <!-- ServerID: ESP32-ScannerTarget -->
   <script>
+    function delayNavigation(path) {
+      // Delay navigation by 100ms to allow CSS active animation to play
+      setTimeout(() => {
+        window.location.href = path;
+      }, 100);
+    }
+
     function runPortScan() {
-      window.location.href = "port_scanning";  // Navigate to port scanning page
+      delayNavigation("port_scanning");
     }
+
     function runUpdate() {
-      window.location.href = "update";  // Navigate to updating page
+      delayNavigation("update");
     }
+
     function runBeaconSpam() {
-      window.location.href = "beacon_spam";  // Navigate to beacon spam page
+      delayNavigation("beacon_spam");
     }
+
     function runOverclock() {
-      window.location.href = "overclock"; // Navigate to overclocking page
+      delayNavigation("overclock");
     }
+
     function runVersionScan() {
-      window.location.href = "service_identifier"; // Navigate to version scanning page
+      delayNavigation("service_identifier");
     }
+
     function runStatus() {
-      window.location.href = "status"; // Navigate to status page
+      delayNavigation("status");
+    }
+
+    function sendCommand(cmd) {
+      alert("Command sent: " + cmd);
+    }
+    
+    function runVulnScan() {
+      delayNavigation("vuln_scanning");
+    }
+
+    function runSSHBruteforce() {
+      delayNavigation("SSHBruteforce");
+    }
+
+    function runFTPBruteforce() {
+      delayNavigation("FTPBruteforce");
     }
   </script>
   <style>
@@ -33,17 +63,24 @@
       border-radius: 10px;
       cursor: pointer;
       margin: 30px 50px;
-      transition: background-color 0.25s, transform 0.25s;
+      transition: background-color 0.25s, transform 0.1s, box-shadow 0.1s;
     }
 
-    .button-style:hover {
+    .button-style:hover:not(:active) {
       background-color: rgb(207, 98, 98);
-      transform: scale(1.2); /* Grows uniformly */
+      transform: scale(1.2);
+    }
+
+    .button-style:active {
+      background-color: rgb(150, 0, 0);
+      transform: scale(0.95);
     }
 
     body {
+      background-color: #121212;
       text-align: center;
       font-family: Arial;
+      color: rgb(191, 0, 0);
     }
 
     .header {
@@ -55,7 +92,7 @@
 
     .header h1 {
       display: inline-block;
-      transition: font-size 0.5s, color 0.25s;
+      transition: font-size 1s, color 1s;
     }
 
     .header h1:hover {
@@ -81,6 +118,9 @@
     <div>
       <button class="button-style" onclick="runVersionScan()">service scanning</button>
       <button class="button-style" onclick="runStatus()">status</button>
+      <button class="button-style" onclick="runVulnScan()">vulnerability scan</button>
+      <button class="button-style" onclick="runSSHBruteforce()">SSH bruteforce</button>
+      <button class="button-style" onclick="runFTPBruteforce()">FTP bruteforce</button>
     </div>
     <div id="results"></div>
   </div>

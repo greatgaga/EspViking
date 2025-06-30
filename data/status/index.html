@@ -4,8 +4,10 @@
   <title>Status</title>
   <style>
     body {
+      background-color: #121212;
       text-align: center;
       font-family: Arial;
+      color: rgb(191, 0, 0);
     }
 
     .header {
@@ -27,29 +29,69 @@
       transition: font-size 0.25s, color 0.25s, text-shadow 0.25s;
     }
 
-    .results-style {
+    table {
+      border-collapse: collapse;
+      margin: 20px auto;
       color: rgb(191, 0, 0);
-      font-size: 15px;
       text-shadow: 0 0 1px red, 0 0 5px darkred;
-    } 
+      font-size: 15px;
+      width: 80%;
+    }
+
+    th, td {
+      border: 1px solid rgb(191, 0, 0);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #1a1a1a;
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Status</h1>
   </div>
-  <div class="results-style" id="results">Loading...</div>
+
+  <div class="results-style">
+    <table id="results">
+      <thead>
+        <tr>
+          <th>IP Address</th>
+          <th>MAC Address</th>
+          <th>Service</th>
+        </tr>
+      </thead>
+      <tbody id="results-body">
+      </tbody>
+    </table>
+  </div>
+
   <script>
-    fetch("/api/status")
+    function fetchStatus() {
+      fetch("/api/status")
         .then(res => res.json())
         .then(data => {
-        document.getElementById("results").innerHTML = data.map(
-            host => `<div>IP: ${host.IP}, MAC: ${host.MAC}, Service: ${host.Service}</div>`
-        ).join("");
+          const tbody = document.getElementById("results-body");
+          tbody.innerHTML = data.map(
+            host => `
+              <tr>
+                <td>${host.IP}</td>
+                <td>${host.MAC}</td>
+                <td>${host.Service}</td>
+              </tr>
+            `
+          ).join("");
         })
-        .catch(() => { 
-        document.getElementById("results").innerText = "Failed to load status.";
+        .catch(() => {
+          document.getElementById("results-body").innerHTML = `
+            <tr><td colspan="3">Failed to load status.</td></tr>
+          `;
         });
-    </script>
+    }
+
+    fetchStatus();
+  </script>
 </body>
 </html>
