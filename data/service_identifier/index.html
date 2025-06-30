@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Service identifier results</title>
+  <title>Service Identifier Results</title>
   <style>
     body {
+      background-color: #121212;
       text-align: center;
       font-family: Arial;
+      color: rgb(191, 0, 0);
     }
 
     .header {
@@ -27,28 +29,115 @@
     }
 
     .results-style {
+      margin-top: 20px;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
       color: rgb(191, 0, 0);
       font-size: 15px;
       text-shadow: 0 0 1px red, 0 0 5px darkred;
+      width: 80%;
+    }
+
+    th, td {
+      border: 1px solid rgb(191, 0, 0);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #1a1a1a;
+    }
+
+    .center-text {
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>Service identifier results</h1>
+    <h1>Service Identifier Results</h1>
   </div>
-  <div class="results-style" id="results">Loading...</div>
+
+  <div class="results-style" id="results">
+    <p class="center-text">Loading...</p>
+  </div>
+
   <script>
-    fetch("/api/service_identifier")
+    let checkInterval;
+
+    function startScan() {
+      fetch("api/start_service_scan")
+        .then(response => response.text())
+        .then(() => {
+          document.getElementById("results").innerHTML = "<p class='center-text'>Scan started...</p>";
+          checkProgress();
+        });
+    }
+
+    function checkProgress() {
+      clearInterval(checkInterval);
+
+      checkInterval = setInterval(() => {
+        fetch("api/scan_progress")
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === "scanning") {
+              const progress = Math.round((data.progress / data.total) * 100);
+              document.getElementById("results").innerHTML =
+                `<p class='center-text'>Scanning... ${progress}% complete</p>`;
+            } else {
+              clearInterval(checkInterval);
+              fetchResults();
+            }
+          });
+      }, 1000);
+    }
+
+    function fetchResults() {
+      fetch("api/service_results")
         .then(res => res.json())
         .then(data => {
-        document.getElementById("results").innerHTML = data.map(
-            host => `<div>IP: ${host.IP}, Service: ${host.Service}</div>`
-        ).join("");
+          let html = `
+            <table>
+              <thead>
+                <tr>
+                  <th>IP Address</th>
+                  <th>Services</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.forEach(host => {
+            const servicesFormatted = host.Service
+              ? host.Service.split(',').map(s => s.trim()).join('<br>')
+              : 'None';
+            html += `
+              <tr>
+                <td>${host.IP}</td>
+                <td>${servicesFormatted}</td>
+              </tr>
+            `;
+          });
+
+          html += `
+              </tbody>
+            </table>
+          `;
+
+          document.getElementById("results").innerHTML = html;
         })
         .catch(() => {
-            document.getElementById("results").innerText = "Failed to load scan results.";
+          document.getElementById("results").innerHTML =
+            "<p class='center-text'>Failed to load results.</p>";
         });
-    </script>
+    }
+
+    startScan();
+  </script>
 </body>
 </html>

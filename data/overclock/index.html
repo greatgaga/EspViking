@@ -13,19 +13,20 @@
       margin: 30px 50px;
       transition: background-color 0.25s, transform 0.25s;
       text-align: center;
-      margin: 30px auto;
-      margin-left: 20px; 
+      margin-left: 20px;
       margin-right: 20px;
     }
 
     .button-style:hover {
       background-color: rgb(207, 98, 98);
-      transform: scale(1.2); /* Grows uniformly */
+      transform: scale(1.2);
     }
 
     body {
+      background-color: #121212;
       text-align: center;
       font-family: Arial;
+      color: rgb(191, 0, 0);
     }
 
     .header {
@@ -51,13 +52,20 @@
       font-size: 15px;
       text-shadow: 0 0 1px red, 0 0 5px darkred;
     }
+
+    .button-style:active {
+      background-color: rgb(150, 0, 0);
+      transform: scale(0.95);
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Overclocking monitor</h1>
   </div>
+
   <p class="results-style" id="overclockStatus">Loading status...</p>
+
   <button class="button-style" onclick="startOverclocking()">on</button>
   <button class="button-style" onclick="stopOverclocking()">off</button>
 
@@ -65,31 +73,45 @@
   <div class="results-style" id="CPUdata"></div>
 
   <script>
-    const seenMessages = new Set(); // Keeps track of already seen messages
+    const seenMessages = new Set();
+
+    function setStatus(msg) {
+      const statusDiv = document.getElementById("status");
+      if (statusDiv) {
+        statusDiv.textContent = msg;
+      }
+    }
+
+    function setOverclockStatus(msg) {
+      const statusDiv = document.getElementById("overclockStatus");
+      if (statusDiv) {
+        statusDiv.textContent = msg;
+      }
+    }
 
     function startOverclocking() {
       fetch("/api/CPU/overclocking/start")
         .then(res => res.json())
-        .then(data => {
-          document.getElementById("status").textContent = "Updating frequency in progress...";
-          document.getElementById("overclockStatus").textContent = "Overclocking CPU is on";
-          fetchCpuFrequency(); // fetch frequency immediately after
+        .then(() => {
+          setStatus("Updating frequency in progress...");
+          setOverclockStatus("Overclocking CPU is on");
+          fetchCpuFrequency();
         })
-        .catch(error => {
-          console.error("Error:", error);
+        .catch(err => {
+          console.error("Error starting overclocking:", err);
         });
     }
 
     function stopOverclocking() {
       fetch("/api/CPU/overclocking/stop")
         .then(res => res.json())
-        .then(data => {
-          document.getElementById("status").textContent = "Updating frequency in progress...";
-          document.getElementById("overclockStatus").textContent = "Overclocking CPU is off";
-          fetchCpuFrequency(); // fetch frequency immediately after
+        .then(() => {
+          setStatus("Updating frequency in progress...");
+          setOverclockStatus("Overclocking CPU is off");
+          fetchCpuFrequency();
         })
-        .catch(error => {
-          console.error("Error:", error);
+        .catch(err => {
+          console.error("Error stopping overclocking:", err);
         });
     }
 
@@ -97,11 +119,15 @@
       fetch("/api/CPU/overclocking/status")
         .then(res => res.json())
         .then(data => {
-          document.getElementById("CPUdata").textContent = `CPU Frequency: ${data.frequency} MHz`;
+          const div = document.getElementById("CPUdata");
+          if (div) {
+            div.textContent = `CPU Frequency: ${data.frequency} MHz`;
+          }
         })
-        .catch(error => {
-          console.error("Error fetching CPU frequency:", error);
-          document.getElementById("CPUdata").textContent = "Error fetching CPU frequency";
+        .catch(err => {
+          console.error("Error fetching CPU frequency:", err);
+          const div = document.getElementById("CPUdata");
+          if (div) div.textContent = "Error fetching CPU frequency";
         });
     }
 
@@ -109,51 +135,45 @@
       fetch("/api/CPU/overclocking/update")
         .then(res => res.json())
         .then(data => {
-          if (Array.isArray(data)) {
-            data.forEach(message => handleNewMessage(message));
-          } else {
-            handleNewMessage(data);
-          }
+          const updates = Array.isArray(data) ? data : [data];
+          updates.forEach(msg => handleNewMessage(msg));
         })
-        .catch(error => {
-          console.error("Error fetching data:", error);
+        .catch(err => {
+          console.error("Error fetching updates:", err);
         });
     }
 
-    function handleNewMessage(message) {
-      if (!seenMessages.has(message.message)) {
-        seenMessages.add(message.message);
-
-        const CPUDiv = document.getElementById("CPUdata");
-        const entry = document.createElement("div");
-        entry.textContent = `Message: ${message.message}`;
-        CPUDiv.appendChild(entry);
+    function handleNewMessage(messageObj) {
+      const message = messageObj.message;
+      if (!seenMessages.has(message)) {
+        seenMessages.add(message);
+        const div = document.getElementById("CPUdata");
+        if (div) {
+          const entry = document.createElement("div");
+          entry.textContent = `Message: ${message}`;
+          div.appendChild(entry);
+        }
       }
     }
 
-    // Fetch current status and freq on page load
     function fetchCurrentStatus() {
       fetch("/api/CPU/overclocking/status")
         .then(res => res.json())
         .then(data => {
-          if (data.overclockOn) {
-            document.getElementById("overclockStatus").textContent = "Overclocking CPU is on";
-          } else {
-            document.getElementById("overclockStatus").textContent = "Overclocking CPU is off";
-          }
-          document.getElementById("CPUdata").textContent = `CPU Frequency: ${data.frequency} MHz`;
+          setOverclockStatus(data.overclockOn ? "Overclocking CPU is on" : "Overclocking CPU is off");
+          const div = document.getElementById("CPUdata");
+          if (div) div.textContent = `CPU Frequency: ${data.frequency} MHz`;
         })
-        .catch(error => {
-          console.error("Error fetching current status:", error);
-          document.getElementById("overclockStatus").textContent = "Error loading status";
-          document.getElementById("CPUdata").textContent = "";
+        .catch(err => {
+          console.error("Error fetching current status:", err);
+          setOverclockStatus("Error loading status");
         });
     }
 
     window.onload = () => {
       fetchCurrentStatus();
-      setInterval(fetchOverclockingUpdates, 1000); // Poll updates every second
-    }
+      setInterval(fetchOverclockingUpdates, 1000); // Poll every second
+    };
   </script>
 </body>
 </html>

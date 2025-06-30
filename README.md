@@ -4,8 +4,6 @@ It is kind of Mr. Robot themed :)
 **If you go to change the code, please make it readable for other programmers.**
 
 ## Setting up the ESP32
-The only thing you need to setup is the password and SSID of your network.  
-Also if you want you can change the usernames.txt and passwords.txt to the wordlists you want.
 
 ## Notes
 I know this project is very buggy and feel free to contact me.  

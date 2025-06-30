@@ -1,27 +1,35 @@
 #include <WiFi.h>
+#include "FS.h"
+#include "LittleFS.h"
 #include <networking_tools.h>
 #include <config.h>
 #include <vector>
+#include <ESPAsyncWebServer.h>
+#include "esp_task_wdt.h"
 #include <esp_wifi.h>
 #include <web_page.h>
-#include <ESPAsyncWebServer.h>
-#include <LittleFS.h>
-#include "esp_task_wdt.h"
 
 // Your WiFi credentials
-const char* ssid = "Učenički_dom_KT";
-const char* password = "crkvena26";
+const char* ssid = "";
+const char* password = "";
+
+// Your API key for the server (optinal, but without it you wont be able to use some features)
+String API_key= "";
 
 std::vector<IPAddress> hosts = {};
 std::vector<HostInfo> discovered_hosts = {};
 std::vector<HostService> hosts_service = {};
+std::vector<HostPorts> hosts_ports = {};
 std::vector<uint8_t> deauth_frame;
 std::vector<uint8_t> beacon_frame;
-std::vector<std::vector<uint8_t>> mac_addresses_of_APs;
+std::vector<std::vector<uint8_t> > mac_addresses_of_APs;
+std::vector<SSHbruteforceResult> SSHBruteforce_results = {};
+std::vector<FTPbruteforceResult> FTPBruteforce_results = {};
 String json = "";
 int numAP = 1;
 
 int channel = -1;
+// feel free to change the port ESP32 uses for communication with clients
 int port = 80;
 
 // html code made for testing service scanning
@@ -31,7 +39,7 @@ const char htmlPage[] PROGMEM = R"rawliteral(
 <html>
 <head>
   <title>Power belongs to the people who take it - Tyrell Wellick</title>
-  <meta name="x-server" content="ESP32-WEB-V1.0">
+  <meta name="x-server" content="ESP32-WEB-V1.0">đ
   <!-- ServerID: ESP32-ScannerTarget -->
 </head>
 <body>
@@ -42,7 +50,7 @@ const char htmlPage[] PROGMEM = R"rawliteral(
 */
 
 void setup() {
-    esp_task_wdt_init(20, true);
+    esp_task_wdt_init(50, true);
     esp_task_wdt_add(NULL);
 
     Serial.begin(115200);
@@ -80,8 +88,19 @@ void setup() {
     server.on("/api/CPU/overclocking/status", HTTP_GET, handle_overclocking_status);
     server.on("/api/CPU/overclocking/start", HTTP_GET, handle_overclocking_start);
     server.on("/api/CPU/overclocking/stop", HTTP_GET, handle_overclocking_stop);
-    server.on("/api/service_identifier", HTTP_GET, handle_service_scanning);
     server.on("/api/status", HTTP_GET, handle_status);
+    server.on("/api/scan_progress", HTTP_GET, handle_scan_progress);
+    server.on("/api/service_results", HTTP_GET, handle_service_results);
+    server.on("/api/start_service_scan", HTTP_GET, handle_start_service_scan);
+    server.on("/api/vuln_scan_start", HTTP_GET, handle_vuln_scanning);
+    server.on("/api/vuln_scan_progress", HTTP_GET, handle_vuln_scan_progress);
+    server.on("/api/vuln_scan_results", HTTP_GET, handle_vuln_scanning_results);
+    server.on("/api/SSHBruteforce_results", HTTP_GET, handle_SSHBruteforce_results);
+    server.on("/api/SSHBruteforce_start", HTTP_GET, hanlde_SSHBruteforce_start);
+    server.on("/api/SSHBruteforce_progress", HTTP_GET, handle_SSHBruteforce_progress);
+    server.on("/api/FTPBruteforce_results", HTTP_GET, handle_FTPBruteforce_results);
+    server.on("/api/FTPBruteforce_start", HTTP_GET, hanlde_FTPBruteforce_start);
+    server.on("/api/FTPBruteforce_progress", HTTP_GET, handle_FTPBruteforce_progress);
 
     // supresing errors
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -95,6 +114,9 @@ void setup() {
     server.serveStatic("/update", LittleFS, "/update/").setDefaultFile("index.html");
     server.serveStatic("/service_identifier", LittleFS, "/service_identifier/").setDefaultFile("index.html");
     server.serveStatic("/status", LittleFS, "/status/").setDefaultFile("index.html");
+    server.serveStatic("/vuln_scanning", LittleFS, "/vuln_scanning/").setDefaultFile("index.html");
+    server.serveStatic("/SSHBruteforce", LittleFS, "/SSHBruteforce/").setDefaultFile("index.html");
+    server.serveStatic("/FTPBruteforce", LittleFS, "/FTPBruteforce/").setDefaultFile("index.html");
 
     // Catch-all for root-level static files only (not ALL paths)
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -118,8 +140,7 @@ void setup() {
 
     esp_task_wdt_reset();
     get_channel();
-    //host_identifier();
-    //host_identifiter_for_debuging();
+    scan_hosts_ips();
     mac_from_arp();
     esp_task_wdt_reset();
 

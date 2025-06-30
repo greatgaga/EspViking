@@ -24,8 +24,10 @@
     }
 
     body {
+      background-color: #121212;
       text-align: center;
       font-family: Arial;
+      color: rgb(191, 0, 0);
     }
 
     .header {
@@ -51,6 +53,11 @@
       font-size: 15px;
       text-shadow: 0 0 1px red, 0 0 5px darkred;
     }
+
+    .button-style:active {
+      background-color: rgb(150, 0, 0);
+      transform: scale(0.95);
+    }
   </style>
 </head>
 <body>
@@ -65,12 +72,16 @@
     let lastUpdate = ""; // Store last message to avoid duplicates
 
     function startScan() {
-      fetch("/api/update/start")
-        .then(res => res.json())
-        .then(data => {
-          console.log("Scan Start:", data);
-        });
+      // Add a short delay to allow :active effect to render
+      setTimeout(() => {
+        fetch("/api/update/start")
+          .then(res => res.json())
+          .then(data => {
+            console.log("Scan Start:", data);
+          });
+      }, 100); // 100 milliseconds delay
     }
+
 
     function fetchUpdate() {
       fetch("/api/update/status")

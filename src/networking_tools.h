@@ -17,5 +17,11 @@ void create_beacon_frame(int);
 void update_mac_addresses_of_APs();
 void host_identifiter_for_debuging();
 String version_scanner(IPAddress);
+void scan_hosts_ips();
+void read_arp_table_for_ips(struct netif *iface);
+String detectOS(IPAddress target);
+String vuln_scanner(IPAddress target);
+void SSHBruteforce(IPAddress target);
+void FTPBruteforce(IPAddress target);
 
 #endif // NETWORKING_TOOLS_H
