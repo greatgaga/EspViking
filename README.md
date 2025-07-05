@@ -6,6 +6,7 @@ It is kind of Mr. Robot themed :)
 ## Setting up the enviorment to flash the firmware on ESP32  
 You will need to install VSCode ([link](https://code.visualstudio.com/download)).  
 After that you will have to install the PlatformIO extension in VSCode.  
+You will need to have git installed, if you dont install it from this [link](https://git-scm.com/downloads), after you have it installed, you will need to restart your VSCode.  
 Also make sure to set up the board in platformio.ini file to the board that you are acctually using (most likely you are using the same board as I used).  
 **(If you didnt know, you will also need internet connection so PlatformIO can install all the necessary libs)**  
 
