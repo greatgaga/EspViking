@@ -58,6 +58,13 @@ Before flashing the firmware (whether prebuilt or custom), make sure you:
 - Optionally modify the wordlists inside the "data" directory
 
 ----------------------------------------
+HOW TO USE
+----------------------------------------
+
+Only thing you have to do is to turn on the ESP32 and connect to its web page (in browser "search" its 
+local IP address and it will take you to its web page)
+
+----------------------------------------
 ACKNOWLEDGEMENTS
 ----------------------------------------
 
