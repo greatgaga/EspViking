@@ -86,7 +86,7 @@
         })
         .catch(() => {
           document.getElementById("results-body").innerHTML = `
-            <tr><td colspan="3">Failed to load status.</td></tr>
+            <tr><td colspan="3">Services werent scanned or IPs of local hosts arent scanned.</td></tr>
           `;
         });
     }
@@ -94,4 +94,5 @@
     fetchStatus();
   </script>
 </body>
+
 </html>
